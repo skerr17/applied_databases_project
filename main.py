@@ -1,7 +1,7 @@
 # main prgram of the project, which will run the whole program
 # Author: Stephen Kerr
 
-from db_mysql import connect_to_mysql, get_rooms, search_speaker_by_name
+from db_mysql import connect_to_mysql, get_rooms, search_speaker_by_name, get_company, get_attendees_by_company
 from db_neo4j import connect_to_neo4j
 
 def show_menu():
@@ -30,7 +30,7 @@ def main():
         choice = input("Choice: ").strip()
 
         if choice == '1':
-            
+            # View Speakers & Sessions
             speaker_name = input("Enter speaker name (or part of the name) : ").strip()
 
             print(f"\nSession Details For : {speaker_name}")
@@ -48,14 +48,38 @@ def main():
             input("\nPress Enter to continue...")
 
         elif choice == '2':
-            pass
+            # View Attendees by Company
+            company_id = input("Enter company ID: ").strip()
+
+            # check if company ID is positive integer
+            if not company_id.isnumeric() or int(company_id) <=1:
+                print("*** ERROR *** Invalid Company ID")
+                continue
+            companies = get_company(mysql_conn, company_id)
+            if not companies:
+                print(f"Company with ID {company_id} doesn't exist.")
+                continue
+            print(f"{companies[1]} Attendees")
+            attendees = get_attendees_by_company(mysql_conn, company_id)
+            if attendees:
+                print("Attendee Name | Attendee DOB | Session Title | Speaker Name | Room Name")
+                print("-" * 80)
+                for attendee in attendees:
+                    print(f"{attendee[0]} | {attendee[1]} | {attendee[2]} | {attendee[3]} | {attendee[4]}")
+            else:
+                print(f"No attendees found for {companies[1]}.")
+            
+            input("\nPress Enter to continue...")
+
         elif choice == '3':
             pass
         elif choice == '4':
             pass
         elif choice == '5':
             pass
+
         elif choice == '6':
+            # View Rooms
             rooms = get_rooms(mysql_conn)
             print("RoomID | RoomName | Capacity")
             print("-" * 30)
