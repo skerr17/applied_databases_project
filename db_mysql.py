@@ -22,7 +22,7 @@ def connect_to_mysql():
         print(f"Error: {err}")
         return None
     
-
+# function to get all rooms from the database 
 def get_rooms(connection):
     try:
         cursor = connection.cursor()
@@ -34,3 +34,23 @@ def get_rooms(connection):
     except mysql.connector.Error as err:
         print(f"Error: {err}")
         return []
+
+
+# function to search for a speaker by name (or part of the name) and return their details
+def search_speaker_by_name(connection, name):
+    try:
+        cursor = connection.cursor()
+        query = """
+        SELECT s.speakerName, s.sessionTitle, r.roomName
+        FROM session s
+        JOIN room r ON s.roomID = r.roomID
+        WHERE s.speakerName LIKE %s;
+        """
+        cursor.execute(query, (f"%{name}%",))
+        speakers = cursor.fetchall()
+        return speakers
+    
+    except mysql.connector.Error as err:
+        print(f"Error: {err}")
+        return []
+

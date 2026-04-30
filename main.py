@@ -1,7 +1,7 @@
 # main prgram of the project, which will run the whole program
 # Author: Stephen Kerr
 
-from db_mysql import connect_to_mysql, get_rooms
+from db_mysql import connect_to_mysql, get_rooms, search_speaker_by_name
 from db_neo4j import connect_to_neo4j
 
 def show_menu():
@@ -30,7 +30,23 @@ def main():
         choice = input("Choice: ").strip()
 
         if choice == '1':
-            pass
+            
+            speaker_name = input("Enter speaker name (or part of the name) : ").strip()
+
+            print(f"\nSession Details For : {speaker_name}")
+
+            speakers = search_speaker_by_name(mysql_conn, speaker_name)
+            if speakers:
+                print("Speaker Name | Session Title | Room Name")
+                print("-" * 50)
+                for speaker in speakers:
+                    print(f"{speaker[0]} | {speaker[1]} | {speaker[2]}")
+            else:
+                print("No speakers found of that name.")
+
+                        
+            input("\nPress Enter to continue...")
+
         elif choice == '2':
             pass
         elif choice == '3':
