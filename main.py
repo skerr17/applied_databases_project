@@ -1,10 +1,11 @@
 # main prgram of the project, which will run the whole program
 # Author: Stephen Kerr
 
-from db_mysql import connect_to_mysql
+from db_mysql import connect_to_mysql, get_rooms
 from db_neo4j import connect_to_neo4j
 
 def show_menu():
+    print("-" * 30 )
     print("Conference Management")
     print("-" * 30 )
     print("\nMENU")
@@ -19,6 +20,11 @@ def show_menu():
 
 
 def main():
+
+    # Connect to databases
+    mysql_conn = connect_to_mysql()
+    neo4j_driver = connect_to_neo4j()
+
     while True:
         show_menu()
         choice = input("Choice: ").strip()
@@ -34,7 +40,15 @@ def main():
         elif choice == '5':
             pass
         elif choice == '6':
-            pass
+            rooms = get_rooms(mysql_conn)
+            print("RoomID | RoomName | Capacity")
+            print("-" * 30)
+            for room in rooms:
+                print(f"{room[0]} | {room[1]} | {room[2]}")
+            
+            input("\nPress Enter to continue...")
+
+
         elif choice == 'x':
             print("Exiting application")
             break
