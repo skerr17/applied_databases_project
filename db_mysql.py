@@ -103,7 +103,7 @@ def add_attendee(connection, attendee_id, name, dob, gender, company_id):
     # check if company id exists
     cursor.execute("SELECT companyID FROM company WHERE companyID = %s", (company_id,))
     if not cursor.fetchone():
-        print(f"*** ERROR *** Company ID: {company_id} doesn't exist.")
+        print(f"*** ERROR *** Company ID: {company_id} does not exist.")
         return False
     
     # check gender is valid
