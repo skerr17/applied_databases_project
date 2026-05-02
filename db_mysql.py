@@ -87,3 +87,37 @@ def get_attendees_by_company(connection, company_id):
     except mysql.connector.Error as err:
         print(f"Error: {err}")
         return []
+    
+
+# function to add an attendee to the database
+def add_attendee(connection, attendee_id, name, dob, gender, company_id):
+
+    cursor = connection.cursor()
+
+    # check if attendee id already exists
+    cursor.execute("SELECT attendeeID FROM attendee WHERE attendeeID = %s", (attendee_id,))
+    if cursor.fetchone():
+        print(f"*** ERROR *** Attendee ID: {attendee_id} already exists.")
+        return False
+    
+    # check if company id exists
+    cursor.execute("SELECT companyID FROM company WHERE companyID = %s", (company_id,))
+    if not cursor.fetchone():
+        print(f"*** ERROR *** Company ID: {company_id} doesn't exist.")
+        return False
+    
+    # check gender is valid
+    if gender not in ["Male", "Female"]:
+        print(f"*** ERROR *** Gender must be Male/Female.")
+        return False
+    
+
+    try:
+        query = "INSERT INTO attendee (attendeeID, attendeeName, attendeeDOB, attendeeGender, attendeeCompanyID) VALUES (%s, %s, %s, %s, %s)"
+        cursor.execute(query, (attendee_id, name, dob, gender, company_id))
+        connection.commit()
+        print("Attendee successfully added.")
+        return True
+    
+    except mysql.connector.Error as err:
+        print(f"Error: {err}")

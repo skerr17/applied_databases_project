@@ -1,7 +1,7 @@
 # main prgram of the project, which will run the whole program
 # Author: Stephen Kerr
 
-from db_mysql import connect_to_mysql, get_rooms, search_speaker_by_name, get_company, get_attendees_by_company
+from db_mysql import connect_to_mysql, get_rooms, search_speaker_by_name, get_company, get_attendees_by_company, add_attendee
 from db_neo4j import connect_to_neo4j
 
 def show_menu():
@@ -72,7 +72,20 @@ def main():
             input("\nPress Enter to continue...")
 
         elif choice == '3':
-            pass
+            # Add New Attendees
+            print("Add New Attendee")
+            print("-" * 20)
+            attendee_id = input("Enter Attendee ID: ").strip()
+            name = input("Enter Attendee Name: ").strip()
+            dob = input("Enter Attendee DOB (YYYY-MM-DD): ").strip()
+            gender = input("Enter Attendee Gender (Male/Female): ").strip()
+            company_id = input("Enter Attendee Company ID: ").strip()
+
+            add_attendee(mysql_conn, attendee_id, name, dob, gender, company_id)
+
+            input("\nPress Enter to continue...")   
+
+            
         elif choice == '4':
             pass
         elif choice == '5':
