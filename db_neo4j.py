@@ -34,3 +34,34 @@ def get_connected_attendees(driver, attendee_id):
     except Exception as err:
         print(f"Error: {err}")
         return []
+    
+
+# function to check if a connection exists between two attendees
+def already_connected(driver, attendee_id1, attendee_id2):
+    try:
+        with driver.session() as session:
+            query = """
+            MATCH (a:Attendee {AttendeeID: $attendee_id1})-[:CONNECTED_TO]-(b:Attendee {AttendeeID: $attendee_id2})
+            RETURN COUNT(*) AS count
+            """
+            result = session.run(query, attendee_id1=attendee_id1, attendee_id2=attendee_id2)
+            count = result.single()["count"]
+            return count > 0
+    
+    except Exception as err:
+        print(f"Error: {err}")
+        return False
+
+# function to add a connection between two attendees
+def add_connection(driver, attendee_id1, attendee_id2):
+    try:
+        with driver.session() as session:
+            query = """
+            MERGE (a:Attendee {AttendeeID: $attendee_id1})
+            MERGE (b:Attendee {AttendeeID: $attendee_id2})
+            MERGE (a)-[:CONNECTED_TO]-(b)
+            """
+            session.run(query, attendee_id1=attendee_id1, attendee_id2=attendee_id2)
+                
+    except Exception as err:
+        print(f"Error: {err}")

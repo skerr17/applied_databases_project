@@ -2,7 +2,7 @@
 # Author: Stephen Kerr
 
 from db_mysql import connect_to_mysql, get_rooms, search_speaker_by_name, get_company, get_attendees_by_company, add_attendee, get_attendee_by_id
-from db_neo4j import connect_to_neo4j, get_connected_attendees
+from db_neo4j import connect_to_neo4j, get_connected_attendees, already_connected, add_connection
 
 def show_menu():
     print("-" * 30 )
@@ -122,7 +122,43 @@ def main():
                 break
 
         elif choice == '5':
-            pass
+            # Add Attendee Connection
+            while True: 
+                id1 = input("Enter first Attendee ID: ").strip()
+                id2 = input("Enter second Attendee ID: ").strip()
+
+                # check if the ids are positive integers
+                if not id1.isnumeric() or not id2.isnumeric():
+                    print("*** ERROR *** Attendee IDs must be numbers")
+                    continue
+
+
+                id1, id2 = int(id1), int(id2)
+
+                # check if the ids are the same
+                if id1 == id2:
+                    print("*** ERROR *** AN Attendee cannot connect to him/herself")
+                    continue
+
+                # check if both attendees exist in the mysql database
+                attendee1 = get_attendee_by_id(mysql_conn, id1)
+                attendee2 = get_attendee_by_id(mysql_conn, id2)
+
+                if not attendee1 or not attendee2:
+                    print("*** ERROR *** One or Both Attendee IDs do not exist")
+                    continue
+
+                #check if the connection already exists in the neo4j database
+                if already_connected(neo4j_driver, id1, id2):
+                    print("*** ERROR *** These attendees are already connected")
+                    continue
+
+                # add the connection to the neo4j database
+                add_connection(neo4j_driver, id1, id2)
+                print(f"Attendee {id1} is now connected to Attendee {id2}")
+
+                input("\nPress Enter to continue...")
+                break
 
         elif choice == '6':
             # View Rooms
