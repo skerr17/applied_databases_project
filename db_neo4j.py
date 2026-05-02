@@ -15,3 +15,22 @@ def connect_to_neo4j():
     except Exception as err:
         print(f"Error: {err}")
         return None
+
+
+
+
+# function to get all attendees connected to a given attendee
+def get_connected_attendees(driver, attendee_id):
+    try:
+        with driver.session() as session:
+            query = """
+            MATCH (a:Attendee {AttendeeID: $attendee_id})-[:CONNECTED_TO]-(b:Attendee)
+            RETURN b.AttendeeID AS ID
+            """
+            result = session.run(query, attendee_id=attendee_id)
+            connected_attendees = [(record["ID"]) for record in result]
+            return connected_attendees
+    
+    except Exception as err:
+        print(f"Error: {err}")
+        return []

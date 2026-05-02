@@ -121,3 +121,19 @@ def add_attendee(connection, attendee_id, name, dob, gender, company_id):
     
     except mysql.connector.Error as err:
         print(f"Error: {err}")
+
+
+
+
+# function to get an attendee by ID returning their name
+def get_attendee_by_id(connection, attendee_id):
+    try:
+        cursor = connection.cursor()
+        query = "SELECT  attendeeName FROM attendee WHERE attendeeID = %s"
+        cursor.execute(query, (attendee_id,))
+        attendee = cursor.fetchone()
+        return attendee
+    
+    except mysql.connector.Error as err:
+        print(f"Error: {err}")
+        return None

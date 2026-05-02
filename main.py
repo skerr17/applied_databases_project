@@ -1,8 +1,8 @@
 # main prgram of the project, which will run the whole program
 # Author: Stephen Kerr
 
-from db_mysql import connect_to_mysql, get_rooms, search_speaker_by_name, get_company, get_attendees_by_company, add_attendee
-from db_neo4j import connect_to_neo4j
+from db_mysql import connect_to_mysql, get_rooms, search_speaker_by_name, get_company, get_attendees_by_company, add_attendee, get_attendee_by_id
+from db_neo4j import connect_to_neo4j, get_connected_attendees
 
 def show_menu():
     print("-" * 30 )
@@ -87,7 +87,40 @@ def main():
 
             
         elif choice == '4':
-            pass
+            # View Connected Attendees
+            while True:
+                attendee_id = input("Enter Attendee ID to view connections: ").strip()
+
+                # check if the id is a positive integer
+                if not attendee_id.isnumeric() or int(attendee_id) <= 0:
+                    print("*** ERROR *** Invalid Attendee ID")
+                    continue
+
+                attendee = get_attendee_by_id(mysql_conn, attendee_id)
+
+                # check if attendee exists
+                if not attendee:
+                    print(f"Attendee with ID {attendee_id} doesn't exist.")
+                    break
+
+                print(f"Attendee Name: {attendee[0]}")
+                print("-" * 30)
+
+                connected_attendees = get_connected_attendees(neo4j_driver, int(attendee_id))
+
+                if not connected_attendees:
+                    print("No connections.")
+                else:
+                    print("These attendees are connected:")
+                    for cid in connected_attendees:
+                        # need to get the name of the connected id using the mysql databases and the function get_attendee_by_id
+                        connected_attendee = get_attendee_by_id(mysql_conn, cid)
+                        if connected_attendee:
+                            print(f"{cid} | {connected_attendee[0]}")
+                        
+                input("\nPress Enter to continue...")
+                break
+
         elif choice == '5':
             pass
 
