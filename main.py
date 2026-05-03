@@ -10,7 +10,7 @@ from colorama import init, Fore # for colored text in the terminal see documenta
 
 from tabulate import tabulate # for printing tables in the terminal see documentation for tabulate for more details https://pypi.org/project/tabulate/
 
-
+from export import export_to_csv # for exporting data to csv file see export.py for more details
 
 init(autoreset=True) # initialize colorama
 
@@ -81,6 +81,16 @@ def main():
             else:
                 print(Fore.RED + f"No attendees found for {companies[1]}.")
             
+            # export option 
+            export = input("Export to CSV? (y/n): ").strip().lower()
+            if export == "y":
+                export_to_csv(
+                    f"company_{company_id}_attendees",
+                    ["Attendee Name", "DOB", "Session Title", "Speaker", "Room"],
+                    attendees
+                )
+
+
             input("\nPress Enter to continue...")
 
         elif choice == '3':
