@@ -4,7 +4,7 @@
 # # Author: Stephen Kerr
 
 from db_mysql import connect_to_mysql, get_rooms, search_speaker_by_name, get_company, get_attendees_by_company, add_attendee, get_attendee_by_id, get_stats, get_agenda
-from db_neo4j import connect_to_neo4j, get_connected_attendees, already_connected, add_connection, get_most_connected
+from db_neo4j import connect_to_neo4j, get_connected_attendees, already_connected, add_connection, get_most_connected, get_friends_of_friends
 
 from colorama import init, Fore # for colored text in the terminal see documentation for colorama for more details https://pypi.org/project/colorama/
 
@@ -159,7 +159,29 @@ def main():
                         connected_attendee = get_attendee_by_id(mysql_conn, cid)
                         if connected_attendee:
                             print(f"{cid} | {connected_attendee[0]}")
+
+                    
+                    # friends of friends (2nd degree connections)
+                    fof_choice = input("\nView friends of friends (2nd degree connections)? (y/n): ").strip().lower()
+
+                    if fof_choice == "y":
+                        print("\nFriend of Friends:")
+                        print("-" * 30)
+                        fof_data = get_friends_of_friends(neo4j_driver, int(attendee_id), connected_attendees)
                         
+                        # check if there are any friends of friends connections
+                        if not fof_data:
+                            print(Fore.RED + "No friends of friends connections.")
+                        else:
+                            for cid, fof_ids in fof_data.items():
+                                connected_attendee = get_attendee_by_id(mysql_conn, cid)
+                                if connected_attendee:
+                                    print(f"{connected_attendee[0]}:")
+                                    for fid in fof_ids:
+                                        fof = get_attendee_by_id(mysql_conn, fid)
+                                        if fof:
+                                            print(f"  └── {fid} | {fof[0]}")
+                             
                 input("\nPress Enter to continue...")
                 break
 

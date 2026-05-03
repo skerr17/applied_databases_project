@@ -95,3 +95,26 @@ def get_most_connected(driver):
     except Exception as err:
         print(Fore.RED + f"Error: {err}")
         return None
+    
+# function to get friends of friends (2nd degree connections)
+def get_friends_of_friends(driver, attendee_id, connected_attendees):
+    try:
+        friends_of_friends = {}
+        with driver.session() as session:
+            for cid in connected_attendees:
+                query = """
+                MATCH (a:Attendee {AttendeeID: $cid})-[:CONNECTED_TO]-(b:Attendee)
+                WHERE b.AttendeeID <> $attendee_id AND NOT b.AttendeeID IN $connected_attendees
+                RETURN b.AttendeeID AS ID
+                """
+                result = session.run(query, cid=cid, attendee_id=attendee_id, connected_attendees=connected_attendees)
+                for record in result:
+                    fof_id = [record["ID"] for record in result]
+                    if fof_id:
+                        friends_of_friends[cid] = fof_id
+        return friends_of_friends
+    except Exception as err:
+        print(Fore.RED + f"Error: {err}")
+        return {}
+
+    
