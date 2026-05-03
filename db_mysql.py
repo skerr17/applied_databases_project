@@ -209,3 +209,26 @@ def get_agenda(connection):
     except mysql.connector.Error as err:
         print(Fore.RED + f"Error: {err}")
         return []
+
+# function to get the session capacity and number of attendees registered for each session
+def get_session_capacity(connection):
+    try:
+        cursor = connection.cursor()
+        query = """
+            SELECT s.sessionTitle, r.roomName, r.capacity,
+                   COUNT(reg.attendeeID) AS registered,
+                   r.capacity - COUNT(reg.attendeeID) AS spots_left
+            FROM session s
+            JOIN room r ON s.roomID = r.roomID
+            LEFT JOIN registration reg ON s.sessionID = reg.sessionID
+            GROUP BY s.sessionID, s.sessionTitle, r.roomName, r.capacity
+            ORDER BY s.sessionDate
+        """
+        cursor.execute(query)
+        session_capacity = cursor.fetchall()
+        return session_capacity
+
+    except mysql.connector.Error as err:
+        print(Fore.RED + f"Error: {err}")
+        return []
+

@@ -3,7 +3,7 @@
 # and provide a menu for the user to interact with the data
 # # Author: Stephen Kerr
 
-from db_mysql import connect_to_mysql, get_rooms, search_speaker_by_name, get_company, get_attendees_by_company, add_attendee, get_attendee_by_id, get_stats, get_agenda
+from db_mysql import connect_to_mysql, get_rooms, search_speaker_by_name, get_company, get_attendees_by_company, add_attendee, get_attendee_by_id, get_stats, get_agenda, get_session_capacity
 from db_neo4j import connect_to_neo4j, get_connected_attendees, already_connected, add_connection, get_most_connected, get_friends_of_friends
 
 from colorama import init, Fore # for colored text in the terminal see documentation for colorama for more details https://pypi.org/project/colorama/
@@ -29,6 +29,7 @@ def show_menu():
     print("6 - View Rooms")
     print("7 - Conference Statistics Dashboard")
     print("8 - View Conference Agenda")
+    print("9 - Session Capacity Utilization")
     print("x - Exit Application")
 
 
@@ -234,6 +235,10 @@ def main():
                 rooms = get_rooms(mysql_conn)
                 rooms_cache = rooms
             
+            print(Fore.CYAN + "\n" + "=" * 30)
+            print(Fore.CYAN + "Conference Rooms")
+            print(Fore.CYAN + "=" * 30)
+            
             print(Fore.CYAN + tabulate(
                 rooms_cache,
                 headers=["RoomID", "RoomName", "Capacity"],
@@ -286,7 +291,7 @@ def main():
                 tablefmt="rounded_grid"
                 ))
             
-            input("Press Enter to continue...")
+            input("\nPress Enter to continue...")
             
 
         elif choice == '8':
@@ -311,7 +316,32 @@ def main():
                     agenda
                 )
             
-            input("Press Enter to continue...")
+            input("\nPress Enter to continue...")
+
+        elif choice == '9':
+            # Session Capacity Utilization
+            capacity_data = get_session_capacity(mysql_conn)
+
+            print(Fore.CYAN + "\n" + "=" * 30)
+            print(Fore.CYAN + "Session Capacity Utilization")
+            print(Fore.CYAN + "=" * 30)
+
+            print(Fore.CYAN + tabulate(
+                capacity_data,
+                headers=["Session Title", "Room Name", "Capacity", "Registrations", "Spots Left"],
+                tablefmt="rounded_grid"
+            ))
+            # export option
+            export = input("Export to CSV? (y/n): ").strip().lower()
+            if export == "y":
+                export_to_csv(
+                    "session_capacity_utilization",
+                    ["Session Title", "Room Name", "Capacity", "Registrations", "Spots Left"],
+                    capacity_data
+                )
+            
+            input("\nPress Enter to continue...")
+
 
 
         elif choice == 'x':
@@ -322,7 +352,7 @@ def main():
             break
         else:
             print("Invalid choice, please try again")
-            input("Press Enter to continue...")
+            input("\nPress Enter to continue...")
 
 if __name__ == "__main__":
     main()
