@@ -1,10 +1,16 @@
-# main prgram of the project, which will run the whole program
-# Author: Stephen Kerr
+# main prgram of the project, which will run the Conference Management CLI app
+# It will connect to both the mysql and neo4j databases 
+# and provide a menu for the user to interact with the data
+# # Author: Stephen Kerr
 
-from db_mysql import connect_to_mysql, get_rooms, search_speaker_by_name, get_company, get_attendees_by_company, add_attendee, get_attendee_by_id
-from db_neo4j import connect_to_neo4j, get_connected_attendees, already_connected, add_connection
+from db_mysql import connect_to_mysql, get_rooms, search_speaker_by_name, get_company, get_attendees_by_company, add_attendee, get_attendee_by_id, get_stats
+from db_neo4j import connect_to_neo4j, get_connected_attendees, already_connected, add_connection, get_most_connected
 
-from colorama import init, Fore # for colored text in the terminal
+from colorama import init, Fore # for colored text in the terminal see documentation for colorama for more details https://pypi.org/project/colorama/
+
+from tabulate import tabulate # for printing tables in the terminal see documentation for tabulate for more details https://pypi.org/project/tabulate/
+
+
 
 init(autoreset=True) # initialize colorama
 
@@ -21,6 +27,7 @@ def show_menu():
     print("4 - View Connected Attendees")
     print("5 - Add Attendee Connection")
     print("6 - View Rooms")
+    print("7 - Conference Statistics Dashboard")
     print("x - Exit Application")
 
 
@@ -174,6 +181,42 @@ def main():
                 print(f"{room[0]} | {room[1]} | {room[2]}")
             
             input("\nPress Enter to continue...")
+
+
+        elif choice == '7':
+            # Stats Dasboard
+            stats = get_stats(mysql_conn)
+            most_connected =  get_most_connected(neo4j_driver)
+
+            # get most connected attendee name from mysql database using the id from neo4j
+            if most_connected:
+                most_connected_attendee = get_attendee_by_id(mysql_conn, most_connected[0])
+                most_connected_name = most_connected_attendee[0] if most_connected_attendee else "Unknown"
+
+            stats_data = [
+                ["Total Attendees", stats["total_attendees"]],
+                ["Total Registrations", stats["total_registrations"]],
+                ["Total Companies", stats["total_companies"]],
+                ["Total Sessions", stats["total_sessions"]],
+                ["Most Connected Attendee", f"{most_connected_name} (ID: {most_connected[0]}) with {most_connected[1]} connections"],
+                ["Most Popular Session", stats["popular_session"]],
+            ]
+
+            print(Fore.CYAN + "\n" + "=" * 30)
+            print(Fore.CYAN + "Conference Statistics Dashboard")
+            print(Fore.CYAN + "=" * 30)
+
+            print(Fore.CYAN + 
+            tabulate(
+                stats_data, 
+                headers=["Statistic", "Value"], 
+                tablefmt="rounded_grid"
+                ))
+            
+            input("Press Enter to continue...")
+            
+
+
 
 
         elif choice == 'x':

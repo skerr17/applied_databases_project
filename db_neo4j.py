@@ -73,3 +73,25 @@ def add_connection(driver, attendee_id1, attendee_id2):
                 
     except Exception as err:
         print(Fore.RED + f"Error: {err}")
+
+
+# function to get the most connected attendee 
+def get_most_connected(driver):
+    try:
+        with driver.session() as session:
+            query = """
+            MATCH (a:Attendee)-[:CONNECTED_TO]-(b:Attendee)
+            RETURN a.AttendeeID AS ID, COUNT(b) AS Connections
+            ORDER BY Connections DESC
+            LIMIT 1
+            """
+            result = session.run(query)
+            record = result.single()
+            if record:
+                return record["ID"], record["Connections"]
+            else:
+                return None
+    
+    except Exception as err:
+        print(Fore.RED + f"Error: {err}")
+        return None

@@ -125,7 +125,7 @@ def add_attendee(connection, attendee_id, name, dob, gender, company_id):
     
     except mysql.connector.Error as err:
         print(Fore.RED + f"Error: {err}")
-
+        return False
 
 
 
@@ -141,3 +141,56 @@ def get_attendee_by_id(connection, attendee_id):
     except mysql.connector.Error as err:
         print(Fore.RED + f"Error: {err}")
         return None
+
+
+# function to get summary stats for the stats dashboard 
+def get_stats(connection):
+    try:
+        cursor = connection.cursor()
+
+        # get total attendees
+        total_attendees_query = "SELECT COUNT(*) FROM attendee"
+        cursor.execute(total_attendees_query)
+        total_attendees = cursor.fetchone()[0]
+
+        # get total companies
+        total_companies_query = "SELECT COUNT(*) FROM company"
+        cursor.execute(total_companies_query)
+        total_companies = cursor.fetchone()[0]
+
+        # get total sessions
+        total_sessions_query = "SELECT COUNT(*) FROM session"
+        cursor.execute(total_sessions_query)
+        total_sessions = cursor.fetchone()[0]
+
+        # get total registrations
+        total_registrations_query = "SELECT COUNT(*) FROM registration"
+        cursor.execute(total_registrations_query)
+        total_registrations = cursor.fetchone()[0]
+
+        # get the most populare session 
+        popular_session_query = """
+        SELECT s.sessionTitle, COUNT(r.registrationID) AS count
+        FROM session s
+        JOIN registration r ON s.sessionID = r.sessionID
+        GROUP BY s.sessionID
+        ORDER BY count DESC
+        LIMIT 1
+        """
+        cursor.execute(popular_session_query)
+        popular_session = cursor.fetchone()[0]
+
+        return {
+            "total_attendees": total_attendees,
+            "total_companies": total_companies,
+            "total_sessions": total_sessions,
+            "total_registrations": total_registrations,
+            "popular_session": popular_session 
+        }
+    
+    except mysql.connector.Error as err:
+        print(Fore.RED + f"Error: {err}")
+        return {}
+
+
+    
