@@ -56,6 +56,15 @@ def main():
             else:
                 print(Fore.RED + "No speakers found of that name.")
 
+
+            # export option
+            export = input("Export to CSV? (y/n): ").strip().lower()
+            if export == "y":
+                export_to_csv(
+                    f"speaker_sessions_{speaker_name.replace(' ', '_')}",
+                    ["Speaker Name", "Session Title", "Room Name"],
+                    speakers
+                )
                         
             input("\nPress Enter to continue...")
 
@@ -189,6 +198,15 @@ def main():
             print("-" * 30)
             for room in rooms:
                 print(f"{room[0]} | {room[1]} | {room[2]}")
+
+            # export option
+            export = input("Export to CSV? (y/n): ").strip().lower()
+            if export == "y":
+                export_to_csv(
+                    "conference_rooms",
+                    ["RoomID", "RoomName", "Capacity"],
+                    rooms
+                )
             
             input("\nPress Enter to continue...")
 

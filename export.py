@@ -12,9 +12,14 @@ init(autoreset=True) # initialize colorama
 def export_to_csv(filename, headers, data):
 
     try: 
+        
+        # create output folder if it doesn't exist
+        os.makedirs("output", exist_ok=True)
+        
+        
         # add a timestamp to the filename to avoid overwriting existing files  
         timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-        full_filename = f"{filename}_{timestamp}.csv"
+        full_filename = os.path.join("output", f"{filename}_{timestamp}.csv")
 
         with open(full_filename, 'w', newline='') as file:
             writer = csv.writer(file)
