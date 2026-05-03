@@ -1,7 +1,15 @@
 # program to connect to neo4j database and execute queries
+# Author: Stephen Kerr
+
 
 from neo4j import GraphDatabase
 from config import neo4j_config
+
+
+from colorama import init, Fore, Style # for colored text in the terminal
+
+init(autoreset=True) # initialize colorama
+
 
 def connect_to_neo4j():
     try:
@@ -9,11 +17,11 @@ def connect_to_neo4j():
             neo4j_config['uri'],
             auth=(neo4j_config['user'], neo4j_config['password'])
         )
-        print("Connected to Neo4j database")
+        print(Fore.GREEN + "Connected to Neo4j database")
         return driver
     
     except Exception as err:
-        print(f"Error: {err}")
+        print(Fore.RED + f"Error: {err}")
         return None
 
 
@@ -32,7 +40,7 @@ def get_connected_attendees(driver, attendee_id):
             return connected_attendees
     
     except Exception as err:
-        print(f"Error: {err}")
+        print(Fore.RED + f"Error: {err}")
         return []
     
 
@@ -49,7 +57,7 @@ def already_connected(driver, attendee_id1, attendee_id2):
             return count > 0
     
     except Exception as err:
-        print(f"Error: {err}")
+        print(Fore.RED + f"Error: {err}")
         return False
 
 # function to add a connection between two attendees
@@ -64,4 +72,4 @@ def add_connection(driver, attendee_id1, attendee_id2):
             session.run(query, attendee_id1=attendee_id1, attendee_id2=attendee_id2)
                 
     except Exception as err:
-        print(f"Error: {err}")
+        print(Fore.RED + f"Error: {err}")

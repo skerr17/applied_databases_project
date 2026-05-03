@@ -6,6 +6,10 @@ import mysql.connector
 from config import mysql_config
 
 
+from colorama import init, Fore, Style # for colored text in the terminal
+
+init(autoreset=True) # initialize colorama
+
 # function to connect to mysql database and return the connection object
 def connect_to_mysql():
     try:
@@ -15,11 +19,11 @@ def connect_to_mysql():
             password=mysql_config['password'],
             database=mysql_config['database']
         )
-        print("Connected to MySQL database")
+        print(Fore.GREEN + "Connected to MySQL database")
         return connection
     
     except mysql.connector.Error as err:
-        print(f"Error: {err}")
+        print(Fore.RED + f"Error: {err}")
         return None
     
 # function to get all rooms from the database 
@@ -32,7 +36,7 @@ def get_rooms(connection):
         return rooms
     
     except mysql.connector.Error as err:
-        print(f"Error: {err}")
+        print(Fore.RED + f"Error: {err}")
         return []
 
 
@@ -51,7 +55,7 @@ def search_speaker_by_name(connection, name):
         return speakers
     
     except mysql.connector.Error as err:
-        print(f"Error: {err}")
+        print(Fore.RED + f"Error: {err}")
         return []
 
 # function to get a company
@@ -64,7 +68,7 @@ def get_company(connection, company_id):
         return company
     
     except mysql.connector.Error as err:
-        print(f"Error: {err}")
+        print(Fore.RED + f"Error: {err}")
         return None
 
 
@@ -85,7 +89,7 @@ def get_attendees_by_company(connection, company_id):
         return attendees
     
     except mysql.connector.Error as err:
-        print(f"Error: {err}")
+        print(Fore.RED + f"Error: {err}")
         return []
     
 
@@ -97,18 +101,18 @@ def add_attendee(connection, attendee_id, name, dob, gender, company_id):
     # check if attendee id already exists
     cursor.execute("SELECT attendeeID FROM attendee WHERE attendeeID = %s", (attendee_id,))
     if cursor.fetchone():
-        print(f"*** ERROR *** Attendee ID: {attendee_id} already exists.")
+        print(Fore.RED + f"*** ERROR *** Attendee ID: {attendee_id} already exists.")
         return False
     
     # check if company id exists
     cursor.execute("SELECT companyID FROM company WHERE companyID = %s", (company_id,))
     if not cursor.fetchone():
-        print(f"*** ERROR *** Company ID: {company_id} does not exist.")
+        print(Fore.RED + f"*** ERROR *** Company ID: {company_id} does not exist.")
         return False
     
     # check gender is valid
     if gender not in ["Male", "Female"]:
-        print(f"*** ERROR *** Gender must be Male/Female.")
+        print(Fore.RED + f"*** ERROR *** Gender must be Male/Female.")
         return False
     
 
@@ -116,11 +120,11 @@ def add_attendee(connection, attendee_id, name, dob, gender, company_id):
         query = "INSERT INTO attendee (attendeeID, attendeeName, attendeeDOB, attendeeGender, attendeeCompanyID) VALUES (%s, %s, %s, %s, %s)"
         cursor.execute(query, (attendee_id, name, dob, gender, company_id))
         connection.commit()
-        print("Attendee successfully added.")
+        print(Fore.GREEN + "Attendee successfully added.")
         return True
     
     except mysql.connector.Error as err:
-        print(f"Error: {err}")
+        print(Fore.RED + f"Error: {err}")
 
 
 
@@ -135,5 +139,5 @@ def get_attendee_by_id(connection, attendee_id):
         return attendee
     
     except mysql.connector.Error as err:
-        print(f"Error: {err}")
+        print(Fore.RED + f"Error: {err}")
         return None

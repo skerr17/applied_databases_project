@@ -4,12 +4,17 @@
 from db_mysql import connect_to_mysql, get_rooms, search_speaker_by_name, get_company, get_attendees_by_company, add_attendee, get_attendee_by_id
 from db_neo4j import connect_to_neo4j, get_connected_attendees, already_connected, add_connection
 
+from colorama import init, Fore # for colored text in the terminal
+
+init(autoreset=True) # initialize colorama
+
+
 def show_menu():
-    print("-" * 30 )
-    print("Conference Management")
-    print("-" * 30 )
-    print("\nMENU")
-    print("=" * 20)
+    print(Fore.CYAN + "-" * 30 )
+    print(Fore.CYAN + "Conference Management")
+    print(Fore.CYAN + "-" * 30 )
+    print(Fore.YELLOW + "\nMENU")
+    print(Fore.YELLOW + "=" * 20)
     print("1 - View Speakers & Sessions")
     print("2 - View Attendees by Company")
     print("3 - Add New Attendees")
@@ -42,7 +47,7 @@ def main():
                 for speaker in speakers:
                     print(f"{speaker[0]} | {speaker[1]} | {speaker[2]}")
             else:
-                print("No speakers found of that name.")
+                print(Fore.RED + "No speakers found of that name.")
 
                         
             input("\nPress Enter to continue...")
@@ -53,11 +58,11 @@ def main():
 
             # check if company ID is positive integer
             if not company_id.isnumeric() or int(company_id) <=1:
-                print("*** ERROR *** Invalid Company ID")
+                print(Fore.RED + "*** ERROR *** Invalid Company ID")
                 continue
             companies = get_company(mysql_conn, company_id)
             if not companies:
-                print(f"Company with ID {company_id} doesn't exist.")
+                print(Fore.RED + f"Company with ID {company_id} doesn't exist.")
                 continue
             print(f"{companies[1]} Attendees")
             attendees = get_attendees_by_company(mysql_conn, company_id)
@@ -67,7 +72,7 @@ def main():
                 for attendee in attendees:
                     print(f"{attendee[0]} | {attendee[1]} | {attendee[2]} | {attendee[3]} | {attendee[4]}")
             else:
-                print(f"No attendees found for {companies[1]}.")
+                print(Fore.RED + f"No attendees found for {companies[1]}.")
             
             input("\nPress Enter to continue...")
 
@@ -93,14 +98,14 @@ def main():
 
                 # check if the id is a positive integer
                 if not attendee_id.isnumeric() or int(attendee_id) <= 0:
-                    print("*** ERROR *** Invalid Attendee ID")
+                    print(Fore.RED + "*** ERROR *** Invalid Attendee ID")
                     continue
 
                 attendee = get_attendee_by_id(mysql_conn, attendee_id)
 
                 # check if attendee exists
                 if not attendee:
-                    print(f"Attendee with ID {attendee_id} doesn't exist.")
+                    print(Fore.RED + f"Attendee with ID {attendee_id} doesn't exist.")
                     break
 
                 print(f"Attendee Name: {attendee[0]}")
@@ -109,7 +114,7 @@ def main():
                 connected_attendees = get_connected_attendees(neo4j_driver, int(attendee_id))
 
                 if not connected_attendees:
-                    print("No connections.")
+                    print(Fore.RED + "No connections.")
                 else:
                     print("These attendees are connected:")
                     for cid in connected_attendees:
@@ -129,7 +134,7 @@ def main():
 
                 # check if the ids are positive integers
                 if not id1.isnumeric() or not id2.isnumeric():
-                    print("*** ERROR *** Attendee IDs must be numbers")
+                    print(Fore.RED + "*** ERROR *** Attendee IDs must be numbers")
                     continue
 
 
@@ -137,7 +142,7 @@ def main():
 
                 # check if the ids are the same
                 if id1 == id2:
-                    print("*** ERROR *** AN Attendee cannot connect to him/herself")
+                    print(Fore.RED + "*** ERROR *** AN Attendee cannot connect to him/herself")
                     continue
 
                 # check if both attendees exist in the mysql database
@@ -145,17 +150,17 @@ def main():
                 attendee2 = get_attendee_by_id(mysql_conn, id2)
 
                 if not attendee1 or not attendee2:
-                    print("*** ERROR *** One or Both Attendee IDs do not exist")
+                    print(Fore.RED + "*** ERROR *** One or Both Attendee IDs do not exist")
                     continue
 
                 #check if the connection already exists in the neo4j database
                 if already_connected(neo4j_driver, id1, id2):
-                    print("*** ERROR *** These attendees are already connected")
+                    print(Fore.RED + "*** ERROR *** These attendees are already connected")
                     continue
 
                 # add the connection to the neo4j database
                 add_connection(neo4j_driver, id1, id2)
-                print(f"Attendee {id1} is now connected to Attendee {id2}")
+                print(Fore.GREEN + f"Attendee {id1} is now connected to Attendee {id2}")
 
                 input("\nPress Enter to continue...")
                 break
