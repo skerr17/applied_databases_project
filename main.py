@@ -261,7 +261,7 @@ def main():
                 ["Total Registrations", stats["total_registrations"]],
                 ["Total Companies", stats["total_companies"]],
                 ["Total Sessions", stats["total_sessions"]],
-                ["Most Connected Attendee", f"{most_connected_name} (ID: {most_connected[0]}) with {most_connected[1]} connections"],
+                ["Most Connected Attendee", f"{most_connected_name} (ID: {most_connected[0]}) with {most_connected[1]} connections" if most_connected else "N/A"],
                 ["Most Popular Session", stats["popular_session"]],
             ]
 
@@ -297,14 +297,11 @@ def main():
             if export == "y":
                 export_to_csv(
                     "conference_agenda",
-                    ["Session Title", "Speaker Name", "Room Name", "Start Time", "End Time", "Attendee Count"],
+                    ["Date", "Room Name", "Session Title", "Speaker Name"],
                     agenda
                 )
             
             input("Press Enter to continue...")
-
-            
-
 
 
         elif choice == 'x':
