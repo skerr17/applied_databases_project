@@ -191,6 +191,21 @@ def get_stats(connection):
     except mysql.connector.Error as err:
         print(Fore.RED + f"Error: {err}")
         return {}
-
-
     
+# function to get the conference agenda
+def get_agenda(connection):
+    try:
+        cursor = connection.cursor()
+        query = """
+            SELECT s.sessionDate, r.roomName, s.sessiontitle, s.speakerName
+            FROM session s
+            JOIN room r ON s.roomID = r.roomID
+            ORDER BY s.sessionDate, r.roomID
+        """
+        cursor.execute(query)
+        agenda = cursor.fetchall()
+        return agenda
+    
+    except mysql.connector.Error as err:
+        print(Fore.RED + f"Error: {err}")
+        return []

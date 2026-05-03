@@ -3,7 +3,7 @@
 # and provide a menu for the user to interact with the data
 # # Author: Stephen Kerr
 
-from db_mysql import connect_to_mysql, get_rooms, search_speaker_by_name, get_company, get_attendees_by_company, add_attendee, get_attendee_by_id, get_stats
+from db_mysql import connect_to_mysql, get_rooms, search_speaker_by_name, get_company, get_attendees_by_company, add_attendee, get_attendee_by_id, get_stats, get_agenda
 from db_neo4j import connect_to_neo4j, get_connected_attendees, already_connected, add_connection, get_most_connected
 
 from colorama import init, Fore # for colored text in the terminal see documentation for colorama for more details https://pypi.org/project/colorama/
@@ -28,6 +28,7 @@ def show_menu():
     print("5 - Add Attendee Connection")
     print("6 - View Rooms")
     print("7 - Conference Statistics Dashboard")
+    print("8 - View Conference Agenda")
     print("x - Exit Application")
 
 
@@ -36,6 +37,9 @@ def main():
     # Connect to databases
     mysql_conn = connect_to_mysql()
     neo4j_driver = connect_to_neo4j()
+
+    # rooms cache
+    rooms_cache = None
 
     while True:
         show_menu()
@@ -53,54 +57,61 @@ def main():
                 print("-" * 50)
                 for speaker in speakers:
                     print(f"{speaker[0]} | {speaker[1]} | {speaker[2]}")
+                
+                # export option
+                export = input("Export to CSV? (y/n): ").strip().lower()
+                if export == "y":
+                    export_to_csv(
+                        f"speaker_sessions_{speaker_name.replace(' ', '_')}",
+                        ["Speaker Name", "Session Title", "Room Name"],
+                        speakers
+                        )
             else:
                 print(Fore.RED + "No speakers found of that name.")
 
 
-            # export option
-            export = input("Export to CSV? (y/n): ").strip().lower()
-            if export == "y":
-                export_to_csv(
-                    f"speaker_sessions_{speaker_name.replace(' ', '_')}",
-                    ["Speaker Name", "Session Title", "Room Name"],
-                    speakers
-                )
+
                         
             input("\nPress Enter to continue...")
 
         elif choice == '2':
             # View Attendees by Company
-            company_id = input("Enter company ID: ").strip()
+            while True:
+                company_id = input("Enter company ID: ").strip()
 
-            # check if company ID is positive integer
-            if not company_id.isnumeric() or int(company_id) <=1:
-                print(Fore.RED + "*** ERROR *** Invalid Company ID")
-                continue
-            companies = get_company(mysql_conn, company_id)
-            if not companies:
-                print(Fore.RED + f"Company with ID {company_id} doesn't exist.")
-                continue
-            print(f"{companies[1]} Attendees")
-            attendees = get_attendees_by_company(mysql_conn, company_id)
-            if attendees:
-                print("Attendee Name | Attendee DOB | Session Title | Speaker Name | Room Name")
-                print("-" * 80)
-                for attendee in attendees:
-                    print(f"{attendee[0]} | {attendee[1]} | {attendee[2]} | {attendee[3]} | {attendee[4]}")
-            else:
-                print(Fore.RED + f"No attendees found for {companies[1]}.")
-            
-            # export option 
-            export = input("Export to CSV? (y/n): ").strip().lower()
-            if export == "y":
-                export_to_csv(
-                    f"company_{company_id}_attendees",
-                    ["Attendee Name", "DOB", "Session Title", "Speaker", "Room"],
-                    attendees
-                )
+                # check if company ID is positive integer
+                if not company_id.isnumeric() or int(company_id) <= 0:
+                    print(Fore.RED + "*** ERROR *** Invalid Company ID")
+                    continue
 
+                companies = get_company(mysql_conn, company_id)
+                if not companies:
+                    print(Fore.RED + f"Company with ID {company_id} doesn't exist.")
+                    continue
 
-            input("\nPress Enter to continue...")
+                print(f"{companies[1]} Attendees")
+                attendees = get_attendees_by_company(mysql_conn, company_id)
+                if attendees:
+                    print("Attendee Name | Attendee DOB | Session Title | Speaker Name | Room Name")
+                    print("-" * 80)
+                    for attendee in attendees:
+                        print(f"{attendee[0]} | {attendee[1]} | {attendee[2]} | {attendee[3]} | {attendee[4]}")
+                
+                    # export option 
+                    export = input("Export to CSV? (y/n): ").strip().lower()
+                    if export == "y":
+                        export_to_csv(
+                            f"company_{company_id}_attendees",
+                            ["Attendee Name", "DOB", "Session Title", "Speaker", "Room"],
+                            attendees
+                        )
+                
+                else:
+                    print(Fore.RED + f"No attendees found for {companies[1]}.")
+                
+
+                input("\nPress Enter to continue...")
+                break
 
         elif choice == '3':
             # Add New Attendees
@@ -132,7 +143,7 @@ def main():
                 # check if attendee exists
                 if not attendee:
                     print(Fore.RED + f"Attendee with ID {attendee_id} doesn't exist.")
-                    break
+                    continue
 
                 print(f"Attendee Name: {attendee[0]}")
                 print("-" * 30)
@@ -168,7 +179,7 @@ def main():
 
                 # check if the ids are the same
                 if id1 == id2:
-                    print(Fore.RED + "*** ERROR *** AN Attendee cannot connect to him/herself")
+                    print(Fore.RED + "*** ERROR *** An Attendee cannot connect to him/herself")
                     continue
 
                 # check if both attendees exist in the mysql database
@@ -193,7 +204,9 @@ def main():
 
         elif choice == '6':
             # View Rooms
-            rooms = get_rooms(mysql_conn)
+            if rooms_cache is None:
+                rooms = get_rooms(mysql_conn)
+                rooms_cache = rooms
             print("RoomID | RoomName | Capacity")
             print("-" * 30)
             for room in rooms:
@@ -244,6 +257,31 @@ def main():
             input("Press Enter to continue...")
             
 
+        elif choice == '8':
+            # View conference agenda
+            agenda = get_agenda(mysql_conn)
+
+            print(Fore.CYAN + "\n" + "=" * 30)
+            print(Fore.CYAN + "Conference Agenda")
+            print(Fore.CYAN + "=" * 30)
+            
+            print(Fore.CYAN + tabulate(
+                agenda,
+                headers=["Date", "Room Name", "Session Title", "Speaker Name"],
+                tablefmt="rounded_grid"
+            ))
+            #export option
+            export = input("Export to CSV? (y/n): ").strip().lower()
+            if export == "y":
+                export_to_csv(
+                    "conference_agenda",
+                    ["Session Title", "Speaker Name", "Room Name", "Start Time", "End Time", "Attendee Count"],
+                    agenda
+                )
+            
+            input("Press Enter to continue...")
+
+            
 
 
 
@@ -253,7 +291,6 @@ def main():
         else:
             print("Invalid choice, please try again")
             input("Press Enter to continue...")
-
 
 if __name__ == "__main__":
     main()
