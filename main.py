@@ -53,10 +53,11 @@ def main():
 
             speakers = search_speaker_by_name(mysql_conn, speaker_name)
             if speakers:
-                print("Speaker Name | Session Title | Room Name")
-                print("-" * 50)
-                for speaker in speakers:
-                    print(f"{speaker[0]} | {speaker[1]} | {speaker[2]}")
+                print(Fore.CYAN + tabulate(
+                    speakers,
+                    headers=["Speaker Name", "Session Title", "Room Name"],
+                    tablefmt="rounded_grid"
+                ))
                 
                 # export option
                 export = input("Export to CSV? (y/n): ").strip().lower()
@@ -92,11 +93,12 @@ def main():
                 print(f"{companies[1]} Attendees")
                 attendees = get_attendees_by_company(mysql_conn, company_id)
                 if attendees:
-                    print("Attendee Name | Attendee DOB | Session Title | Speaker Name | Room Name")
-                    print("-" * 80)
-                    for attendee in attendees:
-                        print(f"{attendee[0]} | {attendee[1]} | {attendee[2]} | {attendee[3]} | {attendee[4]}")
-                
+                    print(Fore.CYAN + tabulate(
+                        attendees,
+                        headers=["Attendee Name", "DOB", "Session Title", "Speaker Name", "Room Name"],
+                        tablefmt="rounded_grid"
+                    ))
+
                     # export option 
                     export = input("Export to CSV? (y/n): ").strip().lower()
                     if export == "y":
@@ -229,18 +231,20 @@ def main():
             if rooms_cache is None:
                 rooms = get_rooms(mysql_conn)
                 rooms_cache = rooms
-            print("RoomID | RoomName | Capacity")
-            print("-" * 30)
-            for room in rooms:
-                print(f"{room[0]} | {room[1]} | {room[2]}")
-
+            
+            print(Fore.CYAN + tabulate(
+                rooms_cache,
+                headers=["RoomID", "RoomName", "Capacity"],
+                tablefmt="rounded_grid"
+                ))
+            
             # export option
             export = input("Export to CSV? (y/n): ").strip().lower()
             if export == "y":
                 export_to_csv(
                     "conference_rooms",
                     ["RoomID", "RoomName", "Capacity"],
-                    rooms
+                    rooms_cache
                 )
             
             input("\nPress Enter to continue...")
