@@ -117,8 +117,10 @@ def main():
 
         elif choice == '3':
             # Add New Attendees
-            print("Add New Attendee")
-            print("-" * 20)
+            print(Fore.CYAN + "\n" + "=" * 30)
+            print(Fore.CYAN + "Add New Attendee")
+            print(Fore.CYAN + "=" * 30)
+
             attendee_id = input("Enter Attendee ID: ").strip()
             name = input("Enter Attendee Name: ").strip()
             dob = input("Enter Attendee DOB (YYYY-MM-DD): ").strip()
@@ -314,6 +316,9 @@ def main():
 
         elif choice == 'x':
             print("Exiting application")
+            mysql_conn.close()
+            neo4j_driver.close()
+            print(Fore.YELLOW + "Goodbye!")
             break
         else:
             print("Invalid choice, please try again")
