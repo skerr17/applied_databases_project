@@ -255,6 +255,10 @@ def main():
             stats = get_stats(mysql_conn)
             most_connected =  get_most_connected(neo4j_driver)
 
+
+            # default most_connected_name to N/A in the case there are no connections in the database to avoid errors when trying to access the mysql database with a None value
+            most_connected_name = "N/A"
+
             # get most connected attendee name from mysql database using the id from neo4j
             if most_connected:
                 most_connected_attendee = get_attendee_by_id(mysql_conn, most_connected[0])
